@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>头颈癌放疗患者CRF风险预测列线图</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-chart-line"></i> 头颈癌放疗患者癌因性疲乏（CRF）风险预测工具</h1>
+            <p class="subtitle">基于8变量逻辑回归模型的列线图预测系统</p>
+        </header>
+
+        <div class="main-content">
+            <!-- 左侧：输入区域 -->
+            <div class="input-section">
+                <h2><i class="fas fa-edit"></i> 患者特征输入</h2>
+                
+                <div class="input-group">
+                    <label for="pain">
+                        <i class="fas fa-head-side-virus"></i> 疼痛（NRS评分）
+                        <span class="tooltip" data-tooltip="NRS≥4分为中重度疼痛">ⓘ</span>
+                    </label>
+                    <select id="pain" class="input-field">
+                        <option value="0">无/轻度疼痛（NRS＜4）</option>
+                        <option value="1">中重度疼痛（NRS≥4）</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="radiation">
+                        <i class="fas fa-radiation"></i> 放射性损伤
+                        <span class="tooltip" data-tooltip="根据CTCAE v5.0标准评估">ⓘ</span>
+                    </label>
+                    <select id="radiation" class="input-field">
+                        <option value="0">无</option>
+                        <option value="1">有</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="stage">
+                        <i class="fas fa-stethoscope"></i> 肿瘤分期（AJCC第8版）
+                        <span class="tooltip" data-tooltip="Ⅰ期=1，Ⅱ期=2，Ⅲ期=3，Ⅳ期=4">ⓘ</span>
+                    </label>
+                    <select id="stage" class="input-field">
+                        <option value="1">Ⅰ期</option>
+                        <option value="2">Ⅱ期</option>
+                        <option value="3">Ⅲ期</option>
+                        <option value="4" selected>Ⅳ期</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="support">
+                        <i class="fas fa-hands-helping"></i> 社会支持水平
+                        <span class="tooltip" data-tooltip="社会支持评定量表得分">ⓘ</span>
+                    </label>
+                    <select id="support" class="input-field">
+                        <option value="1">低支持</option>
+                        <option value="2" selected>中等支持</option>
+                        <option value="3">高支持</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="nutrition">
+                        <i class="fas fa-apple-alt"></i> 营养风险（NRS 2002）
+                        <span class="tooltip" data-tooltip="NRS 2002≥3分为有营养风险">ⓘ</span>
+                    </label>
+                    <select id="nutrition" class="input-field">
+                        <option value="0">无风险</option>
+                        <option value="1">有风险</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="hb">
+                        <i class="fas fa-tint"></i> 血红蛋白（g/L）
+                        <span class="tooltip" data-tooltip="正常范围：男性120-160，女性110-150">ⓘ</span>
+                    </label>
+                    <input type="number" id="hb" class="input-field" value="120" min="80" max="180" step="1">
+                    <div class="range-display">
+                        <span class="min">80</span>
+                        <input type="range" id="hb-slider" min="80" max="180" value="120" class="slider">
+                        <span class="max">180</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="depress">
+                        <i class="fas fa-brain"></i> 抑郁程度（PHQ-9）
+                        <span class="tooltip" data-tooltip="PHQ-9评分分级">ⓘ</span>
+                    </label>
+                    <select id="depress" class="input-field">
+                        <option value="1">正常范围（0-4分）</option>
+                        <option value="2">轻度抑郁（5-9分）</option>
+                        <option value="3" selected>中度抑郁（10-14分）</option>
+                        <option value="4">重度抑郁（15-27分）</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="sleep">
+                        <i class="fas fa-bed"></i> 睡眠障碍（PSQI）
+                        <span class="tooltip" data-tooltip="PSQI＞5分为有睡眠障碍">ⓘ</span>
+                    </label>
+                    <select id="sleep" class="input-field">
+                        <option value="0">无</option>
+                        <option value="1" selected>有</option>
+                    </select>
+                </div>
+
+                <div class="button-group">
+                    <button id="calculate-btn" class="btn calculate">
+                        <i class="fas fa-calculator"></i> 计算CRF风险
+                    </button>
+                    <button id="reset-btn" class="btn reset">
+                        <i class="fas fa-redo"></i> 重置
+                    </button>
+                    <button id="example-btn" class="btn example">
+                        <i class="fas fa-user-md"></i> 查看示例
+                    </button>
+                </div>
+            </div>
+
+            <!-- 右侧：结果区域 -->
+            <div class="result-section">
+                <h2><i class="fas fa-chart-bar"></i> 预测结果</h2>
+                
+                <div class="result-card">
+                    <div class="risk-level" id="risk-level">
+                        <div class="level-icon">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                        <div class="level-text">
+                            <h3>等待计算</h3>
+                            <p>请输入患者特征后点击"计算CRF风险"</p>
+                        </div>
+                    </div>
+
+                    <div class="risk-meter">
+                        <div class="meter-labels">
+                            <span>低风险</span>
+                            <span>中风险</span>
+                            <span>高风险</span>
+                        </div>
+                        <div class="meter-bar">
+                            <div class="meter-fill" id="meter-fill"></div>
+                            <div class="meter-pointer" id="meter-pointer"></div>
+                        </div>
+                        <div class="meter-scale">
+                            <span>0%</span>
+                            <span>25%</span>
+                            <span>50%</span>
+                            <span>75%</span>
+                            <span>100%</span>
+                        </div>
+                    </div>
+
+                    <div class="numerical-results">
+                        <div class="result-item">
+                            <span class="label">总分：</span>
+                            <span class="value" id="total-score">--</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">logit(P)：</span>
+                            <span class="value" id="logit-value">--</span>
+                        </div>
+                        <div class="result-item highlight">
+                            <span class="label">CRF风险概率：</span>
+                            <span class="value" id="risk-prob">--</span>
+                        </div>
+                    </div>
+
+                    <div class="score-breakdown">
+                        <h4><i class="fas fa-list-ol"></i> 各变量得分明细</h4>
+                        <table id="score-table">
+                            <thead>
+                                <tr>
+                                    <th>变量</th>
+                                    <th>取值</th>
+                                    <th>得分</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- 由JavaScript动态填充 -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="recommendation" id="recommendation">
+                        <h4><i class="fas fa-lightbulb"></i> 临床建议</h4>
+                        <p id="recommendation-text">根据风险等级提供个体化建议...</p>
+                    </div>
+                </div>
+
+                <div class="formula-display">
+                    <h4><i class="fas fa-square-root-alt"></i> 计算公式</h4>
+                    <div class="formula">
+                        logit(P) = 2.144 + 1.518×疼痛 + 1.333×放射性损伤 + 1.432×肿瘤分期 
+                                - 0.778×社会支持 + 1.033×营养风险 - 0.067×血红蛋白 
+                                + 0.688×抑郁 + 0.841×睡眠障碍
+                        <br>
+                        P = 1 / [1 + exp(-logit(P))]
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="footer-info">
+                <p><i class="fas fa-info-circle"></i> 本工具基于逻辑回归模型构建，预测准确率：AUC = 0.886</p>
+                <p><i class="fas fa-hospital-user"></i> 适用人群：头颈癌放疗患者 | 数据来源：多中心研究（n=650）</p>
+                <p><i class="fas fa-code"></i> 版本：v1.0 | 最后更新：2024年6月</p>
+            </div>
+            <div class="footer-links">
+                <a href="#"><i class="fas fa-file-pdf"></i> 下载使用说明</a>
+                <a href="#"><i class="fas fa-book"></i> 参考文献</a>
+                <a href="#"><i class="fas fa-bug"></i> 报告问题</a>
+                <a href="#"><i class="fas fa-qrcode"></i> 手机访问</a>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
